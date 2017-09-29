@@ -32,8 +32,8 @@ block content
 
   script(src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js")
   script.
-    websocket = new WebSocket("ws://51.15.66.253:3000/"); 
-    var approve = function(eventId, index) { // change to submit
+    websocket = new WebSocket("ws://192.168.1.33:3000/");  // 51.15.66.253
+    var approve = function(eventId, index) {
       var e = document.getElementById("manage_queue_ids" + index);
       var manageQueueId = e.options[e.selectedIndex].value;
       //console.log(manageQueueId)
