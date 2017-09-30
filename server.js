@@ -208,9 +208,7 @@ function clients_queue(ws, obj) {
         type: "response_queue", 
         data: CLIENTS_QUEUE
     });
-
-    console.log('----- before broadcast response_queue ---')
-    wss.broadcast(response_queue);
+    ws.send(response_queue);
 }
 
 function calculate(ws, obj) {
