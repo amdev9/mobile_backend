@@ -106,10 +106,10 @@ export const wss = new WebSocket.Server({ server });
 function start(ws, obj) {
     CLIENTS_QUEUE = [];
     var counter = 0;
-    var selected = JSON.stringify({
-        type: "selected",
-        data: obj.selected
-    });
+    // var selected = JSON.stringify({
+    //     type: "SELECTED",
+    //     data: obj.selected
+    // });
     next = () => { 
         var parsed = JSON.parse(obj.selected);
         parsed.map((participant, index) => {
@@ -122,13 +122,13 @@ function start(ws, obj) {
         });
 
         return JSON.stringify({
-            type: "next", 
+            type: "NEXT", 
             data: obj.selected
             // add current table info
         });
     }
     var last = JSON.stringify({
-        type: "last",
+        type: "LAST",
         data: obj.selected
     });
 
@@ -145,7 +145,7 @@ function start(ws, obj) {
           seconds: seconds
         });
     }
-    wss.broadcast(selected);
+    // wss.broadcast(selected);
     wss.broadcast(next() );
     var seconds = 0;
     wss.broadcast(tick(seconds));
@@ -179,7 +179,7 @@ function start(ws, obj) {
 
 function connected(ws, obj) {
     var connected = JSON.stringify({
-        type: "connected", 
+        type: "CONNECTED", 
         data: obj.data
         // add table number
     });
@@ -187,31 +187,33 @@ function connected(ws, obj) {
 
     // save obj.data to queue
     // if (!_.some(CLIENTS_QUEUE, obj.data)) {
-      CLIENTS_QUEUE.push(obj.data);
+    CLIENTS_QUEUE.push(obj.data);
     // }
 }
 
 function closed(ws, obj) {
     var closed = JSON.stringify({
-        type: "closed", 
+        type: "CLOSED", 
         data: obj.data
     });
     wss.broadcast(closed); 
     // remove obj.data to queue
     // if (_.some(CLIENTS_QUEUE, obj.data)) {
-        _.remove(CLIENTS_QUEUE, obj.data);
+    _.remove(CLIENTS_QUEUE, obj.data);
     // }
 }
 
 function clients_queue(ws, obj) {
     var response_queue = JSON.stringify({
-        type: "response_queue", 
+        type: "RESPONSE_QUEUE", 
         data: CLIENTS_QUEUE
     });
     ws.send(response_queue);
 }
 
 function calculate(ws, obj) {
+
+    console.log('------ CALCULATE START ------')
     // search event by id and get likes
     const participantsRelation = {
         path: 'participants', 
@@ -222,30 +224,26 @@ function calculate(ws, obj) {
         if (err) {
         console.log(err);
         }
-        console.log('--likes----> ', event.likes);    
+        
         let matches = {};
         event.likes.forEach( (object) => {
-            // console.log('--trace----> ', object)
-            // person_likes contains wrong!
+            
             object.person_likes.forEach( (id) => {
                 event.likes.forEach( (next) => {
                     if(next.person_id == id) {
                         if( next.person_likes.includes(object.person_id) ) {
                             if (!matches[object.person_id]) {
-                                //  || !Array.isArray(matches[object.person_id])
+                                
                                 matches[object.person_id] = [];
                             }
                             matches[object.person_id].push(id);
-                            // console.log('matches --> ',object.person_id, id);
+                            
                         }
                     }
                 })
             })
         })
-
-        // console.log(event.participants);
-        // console.log(matches);
-        // from array of ids to array of objects obj.selected
+ 
         for (var key in matches) {
             var key_index = _.findIndex(event.participants, function(o) { return o._id == key; });
             matches[key].forEach( (item, i , arr) => {
@@ -254,12 +252,65 @@ function calculate(ws, obj) {
             })
             matches[key].unshift(event.participants[key_index]);
         }
-        var calculate = JSON.stringify({
-            type: "calculate",
+
+        //
+        var calculate_client = JSON.stringify({  
+            type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
         });
-        // console.log(calculate)
-        wss.broadcast(calculate);
+        
+        //
+        // var founded = matches;
+        // Array.prototype.indexOfForArrays = function(search)
+        // {
+        //   var searchJson = JSON.stringify(search); // "[3,566,23,79]"
+        //   var arrJson = this.map(JSON.stringify); // ["[2,6,89,45]", "[3,566,23,79]", "[434,677,9,23]"]
+        //   return arrJson.indexOf(searchJson);
+        // };
+        // for (var key in founded ) { 
+        //     founded[key].shift();  
+        // }
+        // var passed = [];
+        // var final = [];
+        // for (var key in founded ) {
+        //     founded[key].forEach( (item) => {  // null
+        //         founded[item._id].forEach( (found) => {
+        //             if (found._id == key) {
+        //                 var s = [key, item._id].sort();
+        //                 if ( passed.indexOfForArrays(s) < 0 ) { 
+        //                     passed.push(s);
+        //                 } else {
+        //                     final.push(s); // [ s, .. ]
+        //                 }
+        //             }
+        //         })
+        //     })
+        // }
+        // var final_ob_done = []; // array of pairs = 2 item arrays
+        // final.forEach( (fin) => {
+        //   var final_ob = [];
+        //   for (var key in founded ) { 
+        //       founded[key].forEach ( (it) => {
+        //           if ( fin.indexOf(it._id) > -1 ) {
+        //             var ind = fin.indexOf(it._id);
+        //             fin.slice(ind , 1);
+        //             final_ob.push(it);
+        //           }
+        //       })
+        //   }
+        //   final_ob_done.push(final_ob);
+        // })
+
+        var calculate_manager = JSON.stringify({  
+            type: "CALCULATE_MANAGER",
+            data: JSON.stringify(matches)
+        });
+        console.log(calculate_manager)
+        ws.send(calculate_manager); 
+
+
+        wss.broadcast(calculate_client); 
+        
     });
 }
 
@@ -268,7 +319,6 @@ function events_decision(ws, obj) {
     const decision = obj.decision;
     const manageQueueId = obj.manageQueueId;
 
-    
     Event.findById(eventId, function (err, event) {
         if (err) {
             console.log(err);
@@ -311,7 +361,7 @@ function events_list(ws, obj) {
     };
     Event.find().populate(participantsRelation).populate(managerRelation).exec(function(err, events ) {
 
-        ws.send(JSON.stringify({  // change to send
+        ws.send(JSON.stringify({   
             type: "EVENTS_LIST", 
             events: JSON.stringify(events)
         }));
@@ -326,9 +376,7 @@ function likes(ws, obj) {
       if (err) {
         console.log(err);
       }
-  
-      // event.likes check if contains
-  
+      
       var obj = {};
       obj.person_id = person_id;
       obj.person_likes = likes;
@@ -347,40 +395,30 @@ function likes(ws, obj) {
         }
         // make broadcast request
         var likes_post = JSON.stringify({
-          type: "likes_post",
+          type: "LIKES_POST",
           data: JSON.stringify(obj)
         });
         wss.broadcast(likes_post); // fix to send ?
-        
-        // res.send(updatedEvent);
       });
     });  
 }
 
 function update_user(ws, obj) {
-// export const update_user = async (req, res) => {
-
-    //  const { user } = req.body;
-
     const user = obj.user;
-    
-     Person.findById(user._id, function (err, person) {
+    Person.findById(user._id, function (err, person) {
        if (err) {
          console.log(err);
        }
-       
        person.current_work = user.current_work;
        person.about = user.about;
        person.age = user.age;
        person.avatar = user.avatar;
-       
        person.save(function (err, updatedPerson) {
          if (err) {
            console.log(err);
          }
-        //  res.send(updatedPerson);
        });
-     });
+    });
 }
 
 function update_event(ws, obj) { 
@@ -440,12 +478,13 @@ function mainLogic(ws, obj) {
       case 'closed': closed(ws, obj); break;
       case 'clients_queue': clients_queue(ws, obj); break;
       case 'calculate': calculate(ws, obj); break;
-      case 'events_decision': events_decision(ws, obj); break;
+      case 'likes': likes(ws, obj); break;
+
       case 'events_list': events_list(ws, obj); break;
       case 'update_event': update_event(ws, obj); break;
       case 'manage_event': manage_event(ws, obj); break;
-      case 'likes': likes(ws, obj); break;
       case 'update_user': update_user(ws, obj); break;
+      case 'events_decision': events_decision(ws, obj); break;
       default: 
         console.log('command not found');
   }
@@ -453,6 +492,7 @@ function mainLogic(ws, obj) {
 
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
+    // console.log('ws client: ', client);
     if (client.readyState === WebSocket.OPEN) {
       client.send(data);
     }
