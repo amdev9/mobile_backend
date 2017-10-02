@@ -301,12 +301,12 @@ function calculate(ws, obj) {
         //   final_ob_done.push(final_ob);
         // })
 
-        var calculate_manager = JSON.stringify({  
-            type: "CALCULATE_MANAGER",
-            data: JSON.stringify(matches)
-        });
-        console.log(calculate_manager)
-        ws.send(calculate_manager); 
+        // var calculate_manager = JSON.stringify({  
+        //     type: "CALCULATE_MANAGER",
+        //     data: JSON.stringify(matches)
+        // });
+        // console.log(calculate_manager)
+        // ws.send(calculate_manager); 
 
 
         wss.broadcast(calculate_client); 
