@@ -25,6 +25,10 @@ import Person from './models/person';
 
 import router from './router';
 
+//
+import authchecker from './authchecker';
+//
+
 var CLIENTS_QUEUE = [];
 
 mongoose.Promise = global.Promise;
@@ -43,6 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+
+app.get('/auth/accountkit', authchecker);
+
 
 app.get('/auth/facebook', facebookLogin);
 app.get('/auth/vkontakte', vkontakteLogin);
