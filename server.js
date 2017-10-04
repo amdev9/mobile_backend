@@ -415,19 +415,26 @@ function likes(ws, obj) {
 function update_user(ws, obj) {
     const user = obj.user;
     Person.findById(user._id, function (err, person) {
-       if (err) {
-         console.log(err);
-       }
-       person.current_work = user.current_work;
-       person.about = user.about;
-       person.age = user.age;
-       person.avatar = user.avatar;
-       person.phoneNumber = user.phoneNumber;
-       person.save(function (err, updatedPerson) {
-         if (err) {
+        if (err) {
            console.log(err);
-         }
-       });
+        }
+    //    person.current_work = user.current_work;
+    //    person.about = user.about;
+    //    person.age = user.age;
+    //    person.avatar = user.avatar;
+    //    person.phoneNumber = user.phoneNumber;
+       
+        for (var prop in user) {
+           if (user.hasOwnProperty(prop)) {
+               person[prop] = user[prop];
+            }
+        }
+
+        person.save(function (err, updatedPerson) {
+           if (err) {
+             console.log(err);
+           }
+        });
     });
 }
 
