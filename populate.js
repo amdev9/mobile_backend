@@ -27,6 +27,7 @@ const organizer = new Person ({
   age: '24',
   gender: 2,
   likes: {},
+  phoneNumber: '+79260263311',
   events: []
 });
 

@@ -9,6 +9,7 @@ var personSchema = Schema({
   name     : String,
   avatar   : String,
   age      : String,
+  phoneNumber: String,
   about : String,
   work: Object,
   university: Object,

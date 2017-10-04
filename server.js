@@ -422,6 +422,7 @@ function update_user(ws, obj) {
        person.about = user.about;
        person.age = user.age;
        person.avatar = user.avatar;
+       person.phoneNumber = user.phoneNumber;
        person.save(function (err, updatedPerson) {
          if (err) {
            console.log(err);
