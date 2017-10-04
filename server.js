@@ -50,7 +50,7 @@ app.use(passport.session());
 
 
 
-app.get('/auth/accountkit', authchecker);
+app.post('/auth/accountkit', authchecker);
 
 
 app.get('/auth/facebook', facebookLogin);
@@ -221,12 +221,10 @@ function clients_queue(ws, obj) {
 }
 
 function calculate(ws, obj) {
-
-    console.log('------ CALCULATE START ------')
     // search event by id and get likes
     const participantsRelation = {
         path: 'participants', 
-        select: ['name', 'avatar', 'likes'],
+        select: ['name', 'avatar', 'likes', 'phoneNumber'],
         model: 'Person',
     };
     Event.findById(obj.event_id).populate(participantsRelation).exec( function (err, event) { // Event.findById(obj.event_id, function (err, event) {
@@ -262,7 +260,6 @@ function calculate(ws, obj) {
             matches[key].unshift(event.participants[key_index]);
         }
 
-        //
         var calculate_client = JSON.stringify({  
             type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
@@ -425,7 +422,7 @@ function update_user(ws, obj) {
     //    person.phoneNumber = user.phoneNumber;
        
         for (var prop in user) {
-           if (user.hasOwnProperty(prop)) {
+           if (user.hasOwnProperty(prop) && prop != 'oauth_id') {
                person[prop] = user[prop];
             }
         }
