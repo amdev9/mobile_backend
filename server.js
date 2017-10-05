@@ -455,7 +455,11 @@ function create_user(ws, obj) {
         if (err) {
           console.log(err);
         }
-    });   
+        ws.send(JSON.stringify({ 
+            type: "CREATED_USER", 
+            user: JSON.stringify(createdUser)
+        })); 
+    });  
 }
 
 function update_event(ws, obj) { 
