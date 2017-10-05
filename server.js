@@ -27,6 +27,7 @@ import router from './router';
 
 //
 import authchecker from './authchecker';
+
 //
 
 var CLIENTS_QUEUE = [];
@@ -49,8 +50,21 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-
-app.post('/auth/accountkit', authchecker);
+app.post('/auth/accountkit', async (req, res) => {
+    Person.findOne({ 'oauth_id': accountId }, function (err, person) {
+        if (err) {
+            console.log(err);
+            res.send({
+                "data" : [],
+                "message" : 'Authentication failed',
+                "status" : 500,
+                "data_count" : 0
+            });
+        }  
+        res.json(person);
+    });
+});
+app.post('/auth/authchecker', authchecker);
 
 
 app.get('/auth/facebook', facebookLogin);
@@ -411,28 +425,32 @@ function likes(ws, obj) {
 
 function update_user(ws, obj) {
     const user = obj.user;
+
     Person.findById(user._id, function (err, person) {
         if (err) {
            console.log(err);
-        }
-    //    person.current_work = user.current_work;
-    //    person.about = user.about;
-    //    person.age = user.age;
-    //    person.avatar = user.avatar;
-    //    person.phoneNumber = user.phoneNumber;
-       
+        } 
         for (var prop in user) {
-           if (user.hasOwnProperty(prop) && prop != 'oauth_id') {
+           if (user.hasOwnProperty(prop) ) {  
                person[prop] = user[prop];
             }
         }
-
         person.save(function (err, updatedPerson) {
            if (err) {
              console.log(err);
            }
         });
     });
+}
+
+function create_user(ws, obj) {
+    const userProfile = obj.user;       
+    user = new Person(userProfile);
+    user.save(function (err, createdUser) {
+        if (err) {
+          console.log(err);
+        }
+    });   
 }
 
 function update_event(ws, obj) { 
@@ -487,6 +505,7 @@ function manage_event(ws, obj) {
 
 function mainLogic(ws, obj) { 
   switch(obj.command) {
+      
       case 'start': start(ws, obj); break;
       case 'connected': connected(ws, obj); break;
       case 'closed': closed(ws, obj); break;
@@ -497,8 +516,11 @@ function mainLogic(ws, obj) {
       case 'events_list': events_list(ws, obj); break;
       case 'update_event': update_event(ws, obj); break;
       case 'manage_event': manage_event(ws, obj); break;
-      case 'update_user': update_user(ws, obj); break;
       case 'events_decision': events_decision(ws, obj); break;
+
+      case 'create_user': create_user(ws, obj); break;
+      case 'update_user': update_user(ws, obj); break;
+      
       default: 
         console.log('command not found');
   }
