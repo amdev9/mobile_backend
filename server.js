@@ -51,8 +51,10 @@ app.use(passport.session());
 
 
 app.post('/auth/accountkit', async (req, res) => {
+    var accountId = req.body.accountId;
     Person.findOne({ 'oauth_id': accountId }, function (err, person) {
-        if (err) {
+        console.log(person);
+        if (person == null) {
             console.log(err);
             res.send({
                 "data" : [],
@@ -60,8 +62,9 @@ app.post('/auth/accountkit', async (req, res) => {
                 "status" : 500,
                 "data_count" : 0
             });
-        }  
-        res.json(person);
+        } else {
+            res.json(person);
+        }
     });
 });
 app.post('/auth/authchecker', authchecker);
@@ -430,6 +433,8 @@ function update_user(ws, obj) {
         if (err) {
            console.log(err);
         } 
+        console.log('user ', user)
+        console.log('person ', person)
         for (var prop in user) {
            if (user.hasOwnProperty(prop) ) {  
                person[prop] = user[prop];
