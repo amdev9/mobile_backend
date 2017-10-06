@@ -146,17 +146,20 @@ function start(ws, obj) {
             }
             return participant;
         });
-
+        // + push notification for this event members
         return JSON.stringify({
             type: "NEXT", 
             data: obj.selected
             // add current table info
         });
     }
-    var last = JSON.stringify({
-        type: "LAST",
-        data: obj.selected
-    });
+    last = () => {
+        // + push notification for this event members
+        return JSON.stringify({
+            type: "LAST",
+            data: obj.selected
+        });
+    }   
 
     timeout = (counter) => {
         return JSON.stringify({
@@ -195,7 +198,8 @@ function start(ws, obj) {
             clearInterval(looper);
             clearTimeout(timer);
             clearTimeout(ticker);
-            wss.broadcast(last); 
+           
+            wss.broadcast( last() ); 
         } else {
 
             wss.broadcast(next()); // change to function next() --> table auto increment
@@ -360,7 +364,7 @@ function events_decision(ws, obj) {
             if (err) {
                 console.log(err);
             }
-            // + push notification 
+            // + push notification for this person._id (manageQueueId)
             var event_decision = JSON.stringify({
                 type: "EVENT_DECISION",
                 decision: decision,
