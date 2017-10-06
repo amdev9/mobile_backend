@@ -7,7 +7,7 @@ var personSchema = Schema({
     index: true,
   },
   platform: String,
-  notification_token: String,
+  token: String,
   name     : String,
   avatar   : String,
   age      : String,

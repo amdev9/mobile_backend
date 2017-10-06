@@ -25,10 +25,10 @@ import Person from './models/person';
 
 import router from './router';
 
-//
+
 import authchecker from './authchecker';
 
-//
+
 
 var CLIENTS_QUEUE = [];
 
@@ -51,8 +51,9 @@ app.use(passport.session());
 
 
 app.post('/auth/token', async (req, res) => {
+    console.log(req.body);
     var oauth_id = req.body.oauth_id;
-    var token = req.body.oauth_id;
+    var token = req.body.token;
     var platform = req.body.platform;
     Person.findOne({ 'oauth_id': oauth_id }, function (err, person) {
         console.log(person);
@@ -195,7 +196,7 @@ function start(ws, obj) {
             }
             return participant;
         });
-        sendPushNotifications(parsed);// + push notification for this event members
+        // sendPushNotifications(parsed);// + push notification for this event members
         return JSON.stringify({
             type: "NEXT", 
             data: obj.selected
@@ -204,7 +205,7 @@ function start(ws, obj) {
     }
     last = () => {
         var parsed = JSON.parse(obj.selected);
-        sendPushNotifications(parsed);// + push notification for this event members
+        // sendPushNotifications(parsed);// + push notification for this event members
         return JSON.stringify({
             type: "LAST",
             data: obj.selected
@@ -335,7 +336,7 @@ function calculate(ws, obj) {
             type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
         });
-        sendPushNotifications(event.participants);  
+        // sendPushNotifications(event.participants);  
         wss.broadcast(calculate_client); 
         
     });
@@ -367,10 +368,10 @@ function events_decision(ws, obj) {
             
             var event_decision = JSON.stringify({
                 type: "EVENT_DECISION",
-                decision: decision,
+                decision: decision, 
                 event: JSON.stringify(updatedEvent)
             });
-            sendPushNotifications(manageQueueId); // object contain needed fields + push notification for this person._id (manageQueueId)
+            // sendPushNotifications(manageQueueId); // object contain needed fields + push notification for this person._id (manageQueueId)
             wss.broadcast(event_decision);
         });
     });
