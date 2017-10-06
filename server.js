@@ -146,12 +146,10 @@ app.get('/images/:id', function(req, res) {
 const server = http.createServer(app);
 export const wss = new WebSocket.Server({ server });
 
-function sendPushNotifications(users) {
-
-    // let users = [
-    //     { name: "Wendy", "devices": ["3cc38d4150928e56b2e90af1101c569765243e89722168e06af13789f627fb7e"]}, // , "<insert device token>"
-    //     //{ name: "John",  "devices": ["<insert device token>"]},
-    //   ];
+function sendPushNotifications(users, alert) {
+    
+    //    "devices": ["3cc38d4150928e56b2e90af1101c569765243e89722168e06af13789f627fb7e"]}, // , "<insert device token>"
+     
 
     let service = new apn.Provider({
         cert: "certs/cert.pem",
@@ -160,7 +158,7 @@ function sendPushNotifications(users) {
     users.forEach( (user) => {
         if(user.token) {
             let note = new apn.Notification();
-            note.alert = `Hey I just sent my first Push Notification`;
+            note.alert = alert;
             note.badge = 0;
             note.sound = "default";
             note.topic = "com.speeddate.TestDeployNew"; 
@@ -200,15 +198,16 @@ function start(ws, obj) {
             }
             return participant;
         });
-        sendPushNotifications(parsed); // note.payload = {'messageFrom': 'John Appleseed'};
+        sendPushNotifications(parsed, 'Переходите к следующему участнику'); // +
         return JSON.stringify({
             type: "NEXT", 
             data: obj.selected
         });
     }
+
     last = () => {
         var parsed = JSON.parse(obj.selected);
-        sendPushNotifications(parsed);// + push notification for this event members
+        sendPushNotifications(parsed, 'Проставьте итоговые оценки всем участникам'); // +
         return JSON.stringify({
             type: "LAST",
             data: obj.selected
@@ -339,7 +338,7 @@ function calculate(ws, obj) {
             type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
         });
-        sendPushNotifications(event.participants);  
+        sendPushNotifications(event.participants, 'Доступны результаты мероприятия');  // +
         wss.broadcast(calculate_client); 
         
     });
@@ -375,7 +374,7 @@ function events_decision(ws, obj) {
                 event: JSON.stringify(updatedEvent)
             });
             Person.findById(manageQueueId, function (err, person) {
-                sendPushNotifications([person]); 
+                sendPushNotifications([person], 'Вы стали организатором мероприятия');  // +
             });
             wss.broadcast(event_decision);
         });
