@@ -9,7 +9,7 @@ import http from 'http';
 import WebSocket from 'ws';
 import path from 'path';
 import _ from 'lodash';
-
+import apn from 'apn';
 import utils from './utils';
 
 import {
@@ -50,6 +50,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+app.post('/auth/token', async (req, res) => {
+    var oauth_id = req.body.oauth_id;
+    var token = req.body.oauth_id;
+    var platform = req.body.platform;
+    Person.findOne({ 'oauth_id': oauth_id }, function (err, person) {
+        console.log(person);
+        person.token = token;
+        person.platform = platform;
+        person.save(function (err, updatedPerson) {
+            if (err) {
+              console.log(err);
+            }
+            res.json(updatedPerson);
+        });
+    });
+});
 app.post('/auth/accountkit', async (req, res) => {
     var accountId = req.body.accountId;
     Person.findOne({ 'oauth_id': accountId }, function (err, person) {
@@ -129,6 +145,39 @@ app.get('/images/:id', function(req, res) {
 const server = http.createServer(app);
 export const wss = new WebSocket.Server({ server });
 
+function sendPushNotifications(users) {
+
+    // let users = [
+    //     { name: "Wendy", "devices": ["3cc38d4150928e56b2e90af1101c569765243e89722168e06af13789f627fb7e"]}, // , "<insert device token>"
+    //     //{ name: "John",  "devices": ["<insert device token>"]},
+    //   ];
+
+    let service = new apn.Provider({
+      cert: "cert.pem",
+      key: "key.pem",
+    });
+    users.forEach( (user) => {
+        let note = new apn.Notification();
+        note.alert = `Hey I just sent my first Push Notification`;
+        note.badge = 0;
+        note.sound = "default";
+        note.topic = "com.speeddate.TestDeployNew"; // The topic is usually the bundle identifier of your application.
+
+        console.log(`Sending: ${note.compile()} to ${user.devices}`);
+
+        service.send(note, user.devices).then( result => {
+            console.log("sent:", result.sent.length); // save sended note and delivery status to Person db
+            console.log("failed:", result.failed.length);
+            console.log(result.failed);
+        });
+    });
+
+    // For one-shot notification tasks you may wish to shutdown the connection
+    // after everything is sent, but only call shutdown if you need your
+    // application to terminate.
+    //   service.shutdown();  
+}
+
 function start(ws, obj) {
     CLIENTS_QUEUE = [];
     var counter = 0;
@@ -146,7 +195,7 @@ function start(ws, obj) {
             }
             return participant;
         });
-        // + push notification for this event members
+        sendPushNotifications(parsed);// + push notification for this event members
         return JSON.stringify({
             type: "NEXT", 
             data: obj.selected
@@ -154,7 +203,8 @@ function start(ws, obj) {
         });
     }
     last = () => {
-        // + push notification for this event members
+        var parsed = JSON.parse(obj.selected);
+        sendPushNotifications(parsed);// + push notification for this event members
         return JSON.stringify({
             type: "LAST",
             data: obj.selected
@@ -285,57 +335,7 @@ function calculate(ws, obj) {
             type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
         });
-        
-        //
-        // var founded = matches;
-        // Array.prototype.indexOfForArrays = function(search)
-        // {
-        //   var searchJson = JSON.stringify(search); // "[3,566,23,79]"
-        //   var arrJson = this.map(JSON.stringify); // ["[2,6,89,45]", "[3,566,23,79]", "[434,677,9,23]"]
-        //   return arrJson.indexOf(searchJson);
-        // };
-        // for (var key in founded ) { 
-        //     founded[key].shift();  
-        // }
-        // var passed = [];
-        // var final = [];
-        // for (var key in founded ) {
-        //     founded[key].forEach( (item) => {  // null
-        //         founded[item._id].forEach( (found) => {
-        //             if (found._id == key) {
-        //                 var s = [key, item._id].sort();
-        //                 if ( passed.indexOfForArrays(s) < 0 ) { 
-        //                     passed.push(s);
-        //                 } else {
-        //                     final.push(s); // [ s, .. ]
-        //                 }
-        //             }
-        //         })
-        //     })
-        // }
-        // var final_ob_done = []; // array of pairs = 2 item arrays
-        // final.forEach( (fin) => {
-        //   var final_ob = [];
-        //   for (var key in founded ) { 
-        //       founded[key].forEach ( (it) => {
-        //           if ( fin.indexOf(it._id) > -1 ) {
-        //             var ind = fin.indexOf(it._id);
-        //             fin.slice(ind , 1);
-        //             final_ob.push(it);
-        //           }
-        //       })
-        //   }
-        //   final_ob_done.push(final_ob);
-        // })
-
-        // var calculate_manager = JSON.stringify({  
-        //     type: "CALCULATE_MANAGER",
-        //     data: JSON.stringify(matches)
-        // });
-        // console.log(calculate_manager)
-        // ws.send(calculate_manager); 
-
-
+        sendPushNotifications(event.participants);  
         wss.broadcast(calculate_client); 
         
     });
@@ -364,12 +364,13 @@ function events_decision(ws, obj) {
             if (err) {
                 console.log(err);
             }
-            // + push notification for this person._id (manageQueueId)
+            
             var event_decision = JSON.stringify({
                 type: "EVENT_DECISION",
                 decision: decision,
                 event: JSON.stringify(updatedEvent)
             });
+            sendPushNotifications(manageQueueId); // object contain needed fields + push notification for this person._id (manageQueueId)
             wss.broadcast(event_decision);
         });
     });

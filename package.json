@@ -11,6 +11,7 @@
   "author": "Konstantin Shkut <konstantin.shkut@gmail.com> (http://rationalappdev.com)",
   "license": "ISC",
   "dependencies": {
+    "apn": "^2.1.5",
     "basic-auth": "^2.0.0",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
