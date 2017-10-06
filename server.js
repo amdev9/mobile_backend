@@ -56,7 +56,7 @@ app.post('/auth/token', async (req, res) => {
     var token = req.body.token;
     var platform = req.body.platform;
     Person.findOne({ 'oauth_id': oauth_id }, function (err, person) {
-        console.log(person);
+        // console.log(person);
         person.token = token;
         person.platform = platform;
         person.save(function (err, updatedPerson) {
@@ -70,7 +70,7 @@ app.post('/auth/token', async (req, res) => {
 app.post('/auth/accountkit', async (req, res) => {
     var accountId = req.body.accountId;
     Person.findOne({ 'oauth_id': accountId }, function (err, person) {
-        console.log(person);
+        // console.log(person);
         if (person == null) {
             console.log(err);
             res.send({
@@ -154,23 +154,27 @@ function sendPushNotifications(users) {
     //   ];
 
     let service = new apn.Provider({
-      cert: "cert.pem",
-      key: "key.pem",
+        cert: "certs/cert.pem",
+        key: "certs/key.pem",
     });
     users.forEach( (user) => {
-        let note = new apn.Notification();
-        note.alert = `Hey I just sent my first Push Notification`;
-        note.badge = 0;
-        note.sound = "default";
-        note.topic = "com.speeddate.TestDeployNew"; // The topic is usually the bundle identifier of your application.
+        if(user.token) {
+            let note = new apn.Notification();
+            note.alert = `Hey I just sent my first Push Notification`;
+            note.badge = 0;
+            note.sound = "default";
+            note.topic = "com.speeddate.TestDeployNew"; 
+    
+            console.log(`Sending: ${note.compile()} to ${user.token}`); // user.devices
+    
+            service.send(note, user.token).then( result => { // user.devices
+                console.log("sent:", result.sent.length); // save sended note and delivery status to Person db
+                console.log("failed:", result.failed.length);
+                console.log(result.failed);
+            });
 
-        console.log(`Sending: ${note.compile()} to ${user.devices}`);
-
-        service.send(note, user.devices).then( result => {
-            console.log("sent:", result.sent.length); // save sended note and delivery status to Person db
-            console.log("failed:", result.failed.length);
-            console.log(result.failed);
-        });
+        }
+        
     });
 
     // For one-shot notification tasks you may wish to shutdown the connection
@@ -196,16 +200,15 @@ function start(ws, obj) {
             }
             return participant;
         });
-        // sendPushNotifications(parsed);// + push notification for this event members
+        sendPushNotifications(parsed); // note.payload = {'messageFrom': 'John Appleseed'};
         return JSON.stringify({
             type: "NEXT", 
             data: obj.selected
-            // add current table info
         });
     }
     last = () => {
         var parsed = JSON.parse(obj.selected);
-        // sendPushNotifications(parsed);// + push notification for this event members
+        sendPushNotifications(parsed);// + push notification for this event members
         return JSON.stringify({
             type: "LAST",
             data: obj.selected
@@ -296,12 +299,12 @@ function calculate(ws, obj) {
     // search event by id and get likes
     const participantsRelation = {
         path: 'participants', 
-        select: ['name', 'avatar', 'likes', 'phoneNumber'],
+        select: ['name', 'avatar', 'likes', 'phoneNumber', 'platform', 'token'],
         model: 'Person',
     };
     Event.findById(obj.event_id).populate(participantsRelation).exec( function (err, event) { // Event.findById(obj.event_id, function (err, event) {
         if (err) {
-        console.log(err);
+            console.log(err);
         }
         
         let matches = {};
@@ -336,7 +339,7 @@ function calculate(ws, obj) {
             type: "CALCULATE_CLIENT",
             data: JSON.stringify(matches)
         });
-        // sendPushNotifications(event.participants);  
+        sendPushNotifications(event.participants);  
         wss.broadcast(calculate_client); 
         
     });
@@ -371,7 +374,9 @@ function events_decision(ws, obj) {
                 decision: decision, 
                 event: JSON.stringify(updatedEvent)
             });
-            // sendPushNotifications(manageQueueId); // object contain needed fields + push notification for this person._id (manageQueueId)
+            Person.findById(manageQueueId, function (err, person) {
+                sendPushNotifications([person]); 
+            });
             wss.broadcast(event_decision);
         });
     });
@@ -439,8 +444,8 @@ function update_user(ws, obj) {
         if (err) {
            console.log(err);
         } 
-        console.log('user ', user)
-        console.log('person ', person)
+        
+        
         for (var prop in user) {
            if (user.hasOwnProperty(prop) ) {  
                person[prop] = user[prop];
