@@ -28,7 +28,8 @@ const organizer = new Person ({
   gender: 2,
   likes: {},
   phoneNumber: '+79260263311',
-  events: []
+  events: [],
+  matches: []
 });
 
 organizer.save(function (err) {
