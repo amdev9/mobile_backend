@@ -93,6 +93,7 @@ app.get('/auth/facebook/callback', facebookMiddleware, oauthCallback);
 app.get('/auth/vkontakte/callback', vkontakteMiddleware, oauthCallback);
 
 app.get('/logout', function(req, res) {
+    // make something on logout?
     req.logout();
     // res.redirect('/');
     res.json("ok");
@@ -184,12 +185,10 @@ function sendPushNotifications(users, alert) {
 function start(ws, obj) {
     CLIENTS_QUEUE = [];
     var counter = 0;
-    // var selected = JSON.stringify({
-    //     type: "SELECTED",
-    //     data: obj.selected
-    // });
+ 
     next = () => { 
         var parsed = JSON.parse(obj.selected);
+        console.log(parsed);
         parsed.map((participant, index) => {
             if (participant.table == obj.event.table_max) {
                 participant.table = 1;
