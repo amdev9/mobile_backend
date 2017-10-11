@@ -141,7 +141,8 @@ const createOrGetUserFromDatabase = async (userProfile) => {
       avatar: userProfile.avatar,
       gender: userProfile.gender,
       work: userProfile.work,
-      university: userProfile.university
+      university: userProfile.university,
+      matches: []
     });
     await user.save();
   }

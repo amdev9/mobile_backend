@@ -20,7 +20,7 @@ var personSchema = Schema({
   gender   : Number,  //  1 - женский, 2 - мужской, 0 - без указания пола. 
   events : [{ type: Schema.Types.ObjectId, ref: 'DateEvent' }],
   likes: Object,
-  // matches_list: [{ type: Schema.ObjectId, ref: 'Person' }],  
+  matches: Array, //[{ type: Schema.ObjectId, ref: 'Person' }],  
   table: Number
 });
 

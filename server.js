@@ -93,6 +93,7 @@ app.get('/auth/facebook/callback', facebookMiddleware, oauthCallback);
 app.get('/auth/vkontakte/callback', vkontakteMiddleware, oauthCallback);
 
 app.get('/logout', function(req, res) {
+    // make something on logout?
     req.logout();
     // res.redirect('/');
     res.json("ok");
@@ -147,9 +148,6 @@ const server = http.createServer(app);
 export const wss = new WebSocket.Server({ server });
 
 function sendPushNotifications(users, alert) {
-    
-    //    "devices": ["3cc38d4150928e56b2e90af1101c569765243e89722168e06af13789f627fb7e"]}, // , "<insert device token>"
-     
 
     let service = new apn.Provider({
         cert: "certs/cert.pem",
@@ -182,14 +180,15 @@ function sendPushNotifications(users, alert) {
 }
 
 function start(ws, obj) {
+  
+    
     CLIENTS_QUEUE = [];
     var counter = 0;
-    // var selected = JSON.stringify({
-    //     type: "SELECTED",
-    //     data: obj.selected
-    // });
+ 
     next = () => { 
+        
         var parsed = JSON.parse(obj.selected);
+        // console.log(parsed);
         parsed.map((participant, index) => {
             if (participant.table == obj.event.table_max) {
                 participant.table = 1;
@@ -206,6 +205,7 @@ function start(ws, obj) {
     }
 
     last = () => {
+        
         var parsed = JSON.parse(obj.selected);
         sendPushNotifications(parsed, 'Проставьте итоговые оценки всем участникам'); // +
         return JSON.stringify({
@@ -227,7 +227,7 @@ function start(ws, obj) {
           seconds: seconds
         });
     }
-    // wss.broadcast(selected);
+    
     wss.broadcast(next() );
     var seconds = 0;
     wss.broadcast(tick(seconds));
@@ -246,6 +246,8 @@ function start(ws, obj) {
         }, obj.talk_time * 1000);
         counter++;
         
+         
+
         if (counter >= JSON.parse(obj.selected).length - 1 ) 
         {
             clearInterval(looper);
@@ -308,7 +310,7 @@ function calculate(ws, obj) {
         
         let matches = {};
         event.likes.forEach( (object) => {
-            
+            console.log(object.person_likes);
             object.person_likes.forEach( (id) => {
                 event.likes.forEach( (next) => {
                     if(next.person_id == id) {
@@ -560,7 +562,7 @@ wss.on('connection', function connection(ws, req) {
   // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
 
   ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
+    // console.log('received: %s', message);
     var obj = JSON.parse(message); 
     
     mainLogic(ws, obj);
