@@ -446,6 +446,8 @@ function update_user(ws, obj) {
            console.log(err);
         } 
         
+        console.log('person', person);
+        console.log('user', user);
         
         for (var prop in user) {
            if (user.hasOwnProperty(prop) ) {  
