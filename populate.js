@@ -38,7 +38,7 @@ organizer.save(function (err) {
 
   if (err) return handleError(err);
   var event = new Event({
-    title: "Название первого мероприятия",
+    title: "Первое мероприятие",
     _creator: organizer._id,    // assign the _id from the person
     photo : 'http://housediz.com/img/foto/full/img/foto/26/bbefaf8dd7ea453e64c1e576a8013767.jpg',
     description: 'Подробное описание для первого мероприятия будет расположено тут', 
@@ -62,7 +62,7 @@ organizer.save(function (err) {
   });
 //////////
   var event2 = new Event({
-    title: "Название второго мероприятия",
+    title: "Второе мероприятие",
     _creator: organizer._id,    // assign the _id from the person
     photo : 'http://fotointerierov.ru/wp-content/uploads/%D0%9B%D0%B0%D0%B9%D0%BD-%D0%BA%D0%B0%D1%84%D0%B5-%D0%BD%D0%B0-%D0%9B%D0%B8%D0%B3%D0%BE%D0%B2%D1%81%D0%BA%D0%BE%D0%BC.jpg',
     description: 'Подробное описание для второго мероприятия будет расположено тут', 
