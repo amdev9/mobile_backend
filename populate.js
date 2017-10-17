@@ -40,7 +40,7 @@ organizer.save(function (err) {
   var event = new Event({
     title: "Первое мероприятие",
     _creator: organizer._id,    // assign the _id from the person
-    photo : 'http://housediz.com/img/foto/full/img/foto/26/bbefaf8dd7ea453e64c1e576a8013767.jpg',
+    photo : 'http://buro.moscow/upload-files/publication/11111.jpg',
     description: 'Подробное описание для первого мероприятия будет расположено тут', 
     places_max: 20,
     cost_men: 1500,
