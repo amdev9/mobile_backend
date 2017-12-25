@@ -1,5 +1,5 @@
 
-const IP_ADDRESS = '192.168.1.34'; //51.15.66.253
+const IP_ADDRESS = '185.82.202.214';
 const PORT = '3000';
 const URL = `http://${IP_ADDRESS}:${PORT}`;
 
