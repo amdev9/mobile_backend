@@ -112,6 +112,9 @@ app.set('view engine', 'pug');
 
 
 app.use('/admin', utils.basicAuth('ratm', 'qwe123qwe§§'));
+
+// chage with passport-local
+
 app.get('/admin', async (req, res) => {
     // add auth with login and password
     var events = await Event.find().exec();
