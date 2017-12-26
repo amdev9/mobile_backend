@@ -15,8 +15,8 @@ const apn = require("apn");
 let tokens = ["bbca56296e584c4791b1e048f2882f1011822998f25521f566969c919ac94fed"];
 
 let service = new apn.Provider({
-  cert: "certificates/cert.pem",
-  key: "certificates/key.pem",
+  cert: "certs/cert.pem",
+  key: "certs/key.pem",
 });
 
 let note = new apn.Notification({
