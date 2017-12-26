@@ -10,7 +10,9 @@ Possible use cases:
 
 const apn = require("apn");
 
-let tokens = ["<insert token here>", "<insert token here>"];
+// Sending: {"aps":{"alert":"Доступны результаты мероприятия",
+// "badge":0,"sound":"default"}} to bbca56296e584c4791b1e048f2882f1011822998f25521f566969c919ac94fed
+let tokens = ["bbca56296e584c4791b1e048f2882f1011822998f25521f566969c919ac94fed"];
 
 let service = new apn.Provider({
   cert: "certificates/cert.pem",
@@ -22,7 +24,7 @@ let note = new apn.Notification({
 });
 
 // The topic is usually the bundle identifier of your application.
-note.topic = "<bundle identifier>";
+note.topic = "com.speeddate.TestDeployNew";
 
 console.log(`Sending: ${note.compile()} to ${tokens}`);
 service.send(note, tokens).then( result => {
